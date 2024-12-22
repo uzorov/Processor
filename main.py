@@ -18,7 +18,7 @@ class Program:
         # Инициализация памяти
         memory = Memory(6)  
 
-        initial_data = [6, 10, 0, 1, 0, 0, 0, 0]
+        initial_data = [6, 10, 0, 1, 30, 40, 0]
         memory.load_data(initial_data)
 
         # Загрузка программы в память

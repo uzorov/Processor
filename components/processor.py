@@ -5,13 +5,15 @@ class Processor:
     JUMP_IF = 3   # 011
     JUMP = 4      # 100
     HALT = 5      # 101
-    LOAD_SIZE = 6 # 110
+    CMP = 6 # 110
     INC = 7       # 111
 
     def __init__(self, memory):
         self.reg = [0] * 4  # 4 регистров общего назначения
         self.pc = 0  # Счетчик команд (Program Counter)
         self.memory = memory  # Память
+        self.cmp_flag = 0  # Начальное значение флага сравнения
+
 
     def execute_program(self):
         running = True
@@ -27,8 +29,8 @@ class Processor:
         op2 = instruction.operand2
 
         if cmd_type == self.LOAD:
-            self.reg[op1] = self.memory.data_memory[self.reg[2]]  # Загрузка данных из памяти в регистр
-            print(f"Загрузка в R{op1} значение {self.memory.data_memory[self.reg[2]]}")
+            self.reg[op1] = self.memory.data_memory[self.reg[op2]]  # Загрузка данных из памяти в регистр
+            print(f"Загрузка в R{op1} значение {self.memory.data_memory[self.reg[op2]]}")
         elif cmd_type == self.STORE:
             print(f"Значение из R{op2} ({self.reg[op2]}) записано в ячейку памяти {op1}.")
             self.memory.data_memory[op1] = self.reg[op2] 
@@ -42,11 +44,13 @@ class Processor:
             print(f"Переход")
             self.pc = op1 - 1  # Переход к указанному адресу
         elif cmd_type == self.JUMP_IF:
-            print(f"Проверка условия совпадения {self.reg[2]} и {self.reg[3]}")
-            if self.reg[2] == self.reg[3]:
+            print(f"Проверка совпадения чисел (используется CMP флаг)")
+            if self.cmp_flag == 0:
                 print(f"PC: {self.pc}")
                 print("Регистры: " + ", ".join(map(str, self.reg)))
                 print("Память данных: " + ", ".join(map(str, self.memory.data_memory)))
+                print(f"Первый операнд: {op1}")
+                print(f"Второй операнд: {op2}")
                 self.pc = op1-1  # Переход к метке завершения
                 return True # Не увеличивать PC, т.к. прыжок
         elif cmd_type == self.INC:
@@ -55,14 +59,18 @@ class Processor:
                 print(f"Увеличен регистр R{op1} до {self.reg[op1]}")
             else:
                 print("Ошибка: Индекс выходит за пределы при INC.")
-        elif cmd_type == self.LOAD_SIZE:
-            if op1 < len(self.reg):
-                self.reg[op1] = self.memory.data_memory[0] + 1  # Автоматически загружаем размер массива в регистр
-                print(f"Загружен размер массива: {self.reg[op1]} в R{op1}")
+        elif cmd_type == self.CMP:
+            if op1 < len(self.reg) and op2 < len(self.reg):
+                if self.reg[op1] > self.reg[op2]:
+                    self.cmp_flag = 1  # Первый регистр больше второго
+                elif self.reg[op1] < self.reg[op2]:
+                    self.cmp_flag = -1  # Первый регистр меньше второго
+                else:
+                    self.cmp_flag = 0  # Регистр равны
+                print(f"Сравнение R{op1}({self.reg[op1]}) и R{op2}({self.reg[op2]}). Флаг: {self.cmp_flag}")
             else:
-                print("Ошибка: Индекс выходит за пределы регистров при LOAD_SIZE.")
-        else:
-            print(f"Неизвестная команда: {cmd_type}")
+                print("Ошибка: Индекс выходит за пределы при CMP.")
+
 
         # Вывод текущего состояния процессора
         print(f"PC: {self.pc}")

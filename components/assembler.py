@@ -47,7 +47,7 @@ class Assembler:
         return machine_code
 
     def is_valid_command(self, cmd_type):
-        return cmd_type in ["LOAD", "STORE", "ADD", "JUMP_IF", "JUMP", "HALT", "LOAD_SIZE", "INC"]
+        return cmd_type in ["LOAD", "STORE", "ADD", "JUMP_IF", "JUMP", "HALT", "CMP", "INC"]
 
     def generate_instruction(self, cmd_type, operand1, operand2):
         if cmd_type == "LOAD":
@@ -57,13 +57,13 @@ class Assembler:
         elif cmd_type == "ADD":
             binary_instruction = (2 << 8) | (operand1 << 4) | operand2
         elif cmd_type == "JUMP_IF":
-            binary_instruction = (3 << 8) | (operand1 << 4) | operand2
+            binary_instruction = (3 << 8) | (operand1 << 4) 
         elif cmd_type == "JUMP":
             binary_instruction = (4 << 8) | (operand1 << 4)
         elif cmd_type == "HALT":
             binary_instruction = (5 << 8)
-        elif cmd_type == "LOAD_SIZE":
-            binary_instruction = (6 << 8) | (operand1 << 4)
+        elif cmd_type == "CMP":
+            binary_instruction = (6 << 8) | (operand1 << 4) | operand2
         elif cmd_type == "INC":
             binary_instruction = (7 << 8) | (operand1 << 4)
         else:
@@ -104,9 +104,9 @@ class Assembler:
             # Обновляем нужный операнд
             instruction = machine_code[command_index]
             if operand_index == 0:  # Для JUMP
-                machine_code[command_index] = (instruction & 0xFF0) | resolved_address
-                print(f"Обновлён операнд JUMP на адрес {resolved_address}")
-            elif operand_index == 1:  # Для JUMP_IF
                 machine_code[command_index] = (instruction & 0xF0F) | (resolved_address << 4)
-                print(f"Обновлён операнд JUMP_IF на адрес {resolved_address}")
+                print(f"Обновлён операнд на адрес {resolved_address}")
+            elif operand_index == 1:  # Для JUMP_IF
+                machine_code[command_index] = (instruction & 0xFF0) | resolved_address
+                print(f"Обновлён операнд на адрес {resolved_address}")
 
